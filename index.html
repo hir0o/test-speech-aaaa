@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web Speech API</title>
+    <script>
+      let flag_speech = 0;
+      const results = [];
+
+      function start() {
+        window.SpeechRecognition =
+          window.SpeechRecognition || webkitSpeechRecognition;
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = "ja";
+        recognition.interimResults = true;
+        recognition.continuous = true;
+
+        recognition.onsoundstart = function () {
+          document.getElementById("status").innerHTML = "認識中";
+        };
+        recognition.onnomatch = function () {
+          document.getElementById("status").innerHTML =
+            "もう一度試してください";
+        };
+        recognition.onerror = function () {
+          document.getElementById("status").innerHTML = "エラー";
+          if (flag_speech == 0) start();
+        };
+        recognition.onsoundend = function () {
+          document.getElementById("status").innerHTML = "停止中";
+          start();
+        };
+
+        recognition.onresult = function (event) {
+          var results = event.results;
+          const textArea = document.getElementById("result_text");
+          for (var i = event.resultIndex; i < results.length; i++) {
+            if (results[i].isFinal) {
+              textArea.innerHTML =
+                (textArea.innerHTML == null ? "" : textArea.innerHTML + "\n") +
+                results[i][0].transcript;
+              start();
+            } else {
+              console.log("途中");
+            }
+          }
+        };
+        flag_speech = 0;
+        document.getElementById("status").innerHTML = "start";
+        recognition.start();
+      }
+    </script>
+  </head>
+
+  <body>
+    <textarea id="result_text" cols="100" rows="10"> </textarea>
+    <br />
+    <textarea id="status" cols="100" rows="1"> </textarea>
+    <br />
+    <input type="button" onClick="start();" value="音認開始" />
+  </body>
+</html>
